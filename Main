@@ -1,0 +1,230 @@
+<?php
+//integrantes do grupo: Michely Amaral Machado e Eder Oliveira de Rosso
+echo <<<FIM
+<!DOCTYPE HTML>
+<html lang="pt-br">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"> 
+<style>
+	 table, td, th {
+		border: 2px solid black;
+		border-collapse: collapse;
+		padding: 1px;
+		text-align: center;
+		}
+	 tr:hover {
+		 background-color:#988A95;
+		}
+	 th {
+		background-color:#87D391;
+		}
+</style>
+</head>
+<body>
+FIM;
+
+function formulario()
+{
+print <<<END
+<html><head></head><body>
+<form name="envia" METHOD=POST ACTION="" enctype="multipart/form-data">
+<input type="file" name="arq1"><br>
+<form name="envia" METHOD=POST ACTION="" enctype="multipart/form-data">
+<input type="file" name="arq2"><br>
+<form name="envia" METHOD=POST ACTION="" enctype="multipart/form-data">
+<input type="file" name="arq3"><br>
+<form name="envia" METHOD=POST ACTION="" enctype="multipart/form-data">
+<input type="file" name="arq4"><br>
+<form name="envia" METHOD=POST ACTION="" enctype="multipart/form-data">
+<input type="file" name="arq5"><br>
+<input TYPE="submit" name="submete" VALUE="ENVIAR"> 
+</form>
+</body></html>
+END;
+}
+function conferealunos ($confere){
+for ($i=0;$i<sizeof($confere);$i++){
+		if (!empty ($confere[$i])){	
+			echo "<p> Aluno de matricula: ".$confere[$i]. " esta matriculado em mais de uma disciplina<p>";
+		}
+	}
+}
+error_reporting(0); 
+if (empty($_POST)) {
+	formulario();
+	exit(0);
+}
+	$arq1=$_FILES['arq1']['tmp_name'];
+	if (!empty($arq1)) {
+		$mat1=teste($arq1);
+		
+	}
+	$arq2=$_FILES['arq2']['tmp_name'];
+	if (!empty($arq2)) {
+		$mat2=teste($arq2);	
+	}
+	$arq3=$_FILES['arq3']['tmp_name'];
+	if (!empty($arq3)) {
+		$mat3=teste($arq3);
+	}
+	
+	$arq4=$_FILES['arq4']['tmp_name'];
+	if (!empty($arq4)) {
+		$mat4=teste($arq4);
+	}
+	
+	$arq5=$_FILES['arq5']['tmp_name'];
+	if (!empty($arq5)) {
+		$mat5=teste($arq5);
+	}
+	echo "<pre>";
+
+//essa parte de conferir se o aluno esta matriculado em mais de uma disciplina nao funciona 100%
+conferealunos($confere1 =(array_intersect_assoc ($mat1,$mat2)));
+conferealunos($confere2 =(array_intersect_assoc ($mat1,$mat3)));
+conferealunos($confere3 =(array_intersect_assoc ($mat1,$mat4)));		
+conferealunos($confere4 =(array_intersect_assoc ($mat1,$mat5)));
+conferealunos($confere5 =(array_intersect_assoc ($mat2,$mat3)));
+conferealunos($confere6 =(array_intersect_assoc ($mat2,$mat4)));
+conferealunos($confere7 =(array_intersect_assoc ($mat2,$mat5)));
+conferealunos($confere8 =(array_intersect_assoc ($mat3,$mat5)));
+conferealunos($confere9 =(array_intersect_assoc ($mat4,$mat5)));
+
+	function teste($arq){
+	$conteudo=file_get_contents($arq);
+	$linhas = explode("\n", $conteudo);
+	$separa = explode (",,",$linhas[2]);
+	$dados = explode(",", trim($linhas[0]));
+	$disciplina=trim($dados[1]);	
+	$pesoTemp = explode(",", trim($linhas[1]));
+	$cabe  = explode(",", trim($linhas[2]));
+	$separaap1 = explode (",",$separa[0]);
+	$separaap2 = explode (",",$separa[1]);
+	$tamap1 = sizeof($separaap1)-2;
+	$tamap2 = sizeof ($separaap2);
+
+	$cabe[$tamap1+2] = 'AP1';
+	$cabe[sizeof($cabe)]='AP2';
+	
+	for ($i=2; $i < $tamap1+2; $i++){
+			 $nomeT = $cabe[$i];
+			 $pesosap1[$nomeT]=$pesoTemp[$i];
+		}
+	for ($i=sizeof($separaap1); $i <sizeof($pesoTemp); $i++){
+			 $nomeT = $cabe[$i];
+			 $pesosap2[$nomeT]=$pesoTemp[$i];
+		}
+		
+	for ($i=3; $i < sizeof($linhas); $i++){
+			$linha = trim($linhas[$i]);
+			$temp = explode(",", $linha);
+			$mat=$temp[0];
+			
+			if (strlen($mat) < 9){
+				continue;
+			}
+			if (!preg_match("/^[0-9]{9}$/", $mat)){
+				 continue;
+			 }
+			if (isset($notas[$mat])){
+				 continue;
+			 }
+		$notas[$mat][$cabe[1]] = $temp[1];
+		for ($j = 0; $j < sizeof($temp); $j++){
+			$n = $cabe[$j];
+			$notas[$mat][$n] = $temp[$j];
+		}
+	}
+	$somaPeso = 0;
+	foreach ($pesosap1 as $ex => $v){
+			$somaPesoap1+= (float)$v;
+	}
+	$nomePv1 = array_key_last($pesosap1);
+	$pesosap1[$nomePv1]=(float) 1.5 - $somaPesoap1;
+	
+	$somaPeso2 = 0;
+	foreach ($pesosap2 as $ex => $v){
+			$somaPesoap2+= (float)$v;
+	}
+	$nomePv2 = array_key_last($pesosap2);
+	$pesosap2[$nomePv2]=(float) 2.5 - $somaPesoap2;
+
+	foreach ($notas as $mat => $campos){
+		$notaAp1=0;
+		$matriculas[]=$notas[$mat]['Matricula'];
+		foreach ($pesosap1 as $ex => $peso){
+			if ($peso==0) { 
+				continue;
+			}
+			$nota=(float)$campos[$ex];
+			if ($campos[$ex] == "NE"){
+				$nota = 0;
+			}
+			if ($campos[$ex] == "ND") { 
+				$nota = 0;
+			}
+			$notaAp1+= (($nota*$peso)/10);
+		}
+		$notas[$mat]["AP1"] = sprintf("%.1f", $notaAp1);
+	}
+	
+	foreach ($notas as $mat => $campos){
+		$notaAp2=0;
+		foreach ($pesosap2 as $ex => $peso){
+			if ($peso==0) { 
+				continue;
+			}
+			$nota=(float)$campos[$ex];
+			if ($campos[$ex] == "NE"){
+				$nota = 0;
+			}
+			if ($campos[$ex] == "ND") { 
+				$nota = 0;
+			}
+			$notaAp2+= (($nota*$peso)/10);
+		}
+		$notas[$mat]["AP2"] = sprintf("%.1f", $notaAp2);
+	}
+	
+	foreach ($notas as $mat => $campos){
+		$notasAS= 10-($notas[$mat]["AP1"]+$notas[$mat]["AP2"]);
+		$somaAS= $notasAS;
+		$ASarredondada =round($somaAS,1);
+		$notas[$mat]["AS"]=$ASarredondada;
+	}
+	
+// RELATÓRIOS
+
+	echo "<h1>$disciplina</h1>\n"; 
+	echo "<table>\n";
+	echo "<tr>\n";
+	for ($i=0; $i < sizeof($cabe); $i++){
+		$cab = $cabe[$i];
+		echo "<th>".$cabe[$i];
+		if (isset($pesosap1[$cab])){			
+			echo "(".$pesosap1[$cab].")";
+		}
+		if (isset($pesosap2[$cab])){
+			echo "(".$pesosap2[$cab].")";
+		}
+	
+		echo "</th>";
+	}
+	echo "<th>AS minima</th>\n";
+	echo "</tr>";
+	foreach ($notas as $mat => $n){
+		echo "<tr>\n";
+		foreach ($cabe as $k){
+			echo "<td>$n[$k]</td>\n";
+			}
+			echo "<td>".$notas[$mat]["AS"]."</td>\n";
+		echo "</tr>\n";
+	}
+	echo "</table>\n";
+	return ($matriculas);
+}
+?>
+<?php
+header('Content-Type: text/html; charset=UTF-8');
+echo "</body>\n</html>\n";
+?>
